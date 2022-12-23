@@ -370,7 +370,7 @@ MonoBehaviour:
     type: 3}
   othersStrPrefab: {fileID: 4905209079143859858, guid: 3689eac499d744c69b0e4b473302daf1,
     type: 3}
-  activateInterval: 0.1
+  updatePitchInterval: 0.1
   strRadius: 0.01
   minDist: 0
   maxRatio: 4

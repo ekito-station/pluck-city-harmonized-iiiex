@@ -27,10 +27,11 @@ public class SoundPlayer : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+
     }
 
-    private void OnTriggerEnter(Collider other) {
+    private void OnTriggerEnter(Collider other)
+    {
         Debug.Log("Collided with string.");
         StringController stringController = other.gameObject.GetComponent<StringController>();
         float strPitch = stringController.pitch;
@@ -40,11 +41,11 @@ public class SoundPlayer : MonoBehaviour
             case 0.36f:
                 audioSource.PlayOneShot(b3);
                 Debug.Log("Played b3.");
-                break; 
+                break;
             case 0.44f:
                 audioSource.PlayOneShot(a3);
                 Debug.Log("Played a3.");
-                break;                
+                break;
             case 0.56f:
                 audioSource.PlayOneShot(g3);
                 Debug.Log("Played g3.");
@@ -80,7 +81,7 @@ public class SoundPlayer : MonoBehaviour
             case 100.0f:
                 audioSource.PlayOneShot(d2);
                 Debug.Log("Played d2.");
-                break;                                                                                                                                            
+                break;
             default:
                 Debug.Log("Played none.");
                 break;

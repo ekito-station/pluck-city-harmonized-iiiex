@@ -23,7 +23,7 @@ public class HomeManager : MonoBehaviourPunCallbacks
     private WaitForSeconds waitToUpdate;
 
     private int count;
-    private Vector3 markerPos;
+    private Vector3 prePos;
 
     public float strRadius = 0.5f;
 
@@ -109,13 +109,13 @@ public class HomeManager : MonoBehaviourPunCallbacks
             {
                 Transform camTran = arCamera.transform;
                 Vector3 curPos = camTran.position + front * camTran.forward;
-                float sqrDist = (curPos - markerPos).sqrMagnitude;
+                float sqrDist = (curPos - prePos).sqrMagnitude;
                 if (count == 1) // ピンが1個の場合
                 {
                     if (sqrDist > minDist)
                     {
                         expText.SetActive(true);
-                        pitchText.text = "C3";                        
+                        pitchText.text = "C3";
                     }
                 }
                 else    // ピンが2個以上の場合
@@ -132,39 +132,39 @@ public class HomeManager : MonoBehaviourPunCallbacks
                             {
                                 case 0.36f:
                                     pitchText.text = "B3";
-                                    break; 
+                                    break;
                                 case 0.44f:
-                                    pitchText.text = "A3";                                    
-                                    break;                
+                                    pitchText.text = "A3";
+                                    break;
                                 case 0.56f:
-                                    pitchText.text = "G3";                                    
+                                    pitchText.text = "G3";
                                     break;
                                 case 0.64f:
-                                    pitchText.text = "F3";                                    
+                                    pitchText.text = "F3";
                                     break;
                                 case 1.0f:
-                                    pitchText.text = "E3";                                    
+                                    pitchText.text = "E3";
                                     break;
                                 case 1.44f:
-                                     pitchText.text = "C3";                                   
+                                    pitchText.text = "C3";
                                     break;
                                 case 1.78f:
-                                    pitchText.text = "A2";                                    
+                                    pitchText.text = "A2";
                                     break;
                                 case 2.25f:
-                                    pitchText.text = "G2";                                    
+                                    pitchText.text = "G2";
                                     break;
                                 case 2.56f:
-                                    pitchText.text = "F2";                                    
+                                    pitchText.text = "F2";
                                     break;
                                 case 3.16f:
-                                    pitchText.text = "E2";                                    
+                                    pitchText.text = "E2";
                                     break;
                                 case 100.0f:
-                                    pitchText.text = "D2";                                    
-                                    break;                                                                                                                                            
+                                    pitchText.text = "D2";
+                                    break;
                                 default:
-                                    pitchText.text = ""; 
+                                    pitchText.text = "";
                                     break;
                             }
                             break;
@@ -194,26 +194,27 @@ public class HomeManager : MonoBehaviourPunCallbacks
         // 2つ目以降のピンなら弦を張る
         if (count > 0)
         {
-            // 弦をコライダーと共に設置
-            Vector3 strVec = curPos - markerPos;    // 弦の方向を取得
-            float dist = strVec.magnitude;  // 弦の長さを取得
+            // curPosは置いたばかりのピンの座標でprePosは1つ前のピンの座標
+            Vector3 strVec = curPos - prePos;           // 弦の方向を取得
+            float dist = strVec.magnitude;              // 弦の長さを取得
             Vector3 strY = new Vector3(0f, dist, 0f);
-            Vector3 strVec2 = strVec * 0.5f;
-            Vector3 centerCoord = markerPos + strVec2;  // 中点の座標        
-
-            GameObject str = Instantiate(myStrPrefab, centerCoord, Quaternion.identity) as GameObject;
-            str.transform.localScale = new Vector3(strRadius, dist / 2, strRadius); // ひとまずY軸方向に伸ばす
+            Vector3 halfStrVec = strVec * 0.5f;
+            Vector3 centerCoord = prePos + halfStrVec;  // 弦の中点の座標        
+            // myStrPrefabは弦（Capsule）のプレハブ
+            GameObject str = Instantiate(myStrPrefab, centerCoord, Quaternion.identity);    // 弦をインスタンス化
+            // strRadiusは弦（Capsule）の太さ
+            str.transform.localScale = new Vector3(strRadius, dist / 2, strRadius);         // ひとまず弦をY軸方向に伸ばす
 
             CapsuleCollider col = str.GetComponent<CapsuleCollider>();
             col.isTrigger = true;   // 衝突判定を行わないように
-            str.transform.rotation = Quaternion.FromToRotation(strY, strVec);   // 弦を回転
+            str.transform.rotation = Quaternion.FromToRotation(strY, strVec);   // 弦を本来の方向に回転
 
             // 弦にプロパティ(pitch)を追加
             StringController stringController = str.GetComponent<StringController>();
             if (count == 1)
             {
                 // 最初に張られた弦の場合、弦の長さを保存しドを割り当てる
-                sqrInitLength = (curPos - markerPos).sqrMagnitude;
+                sqrInitLength = (curPos - prePos).sqrMagnitude;
                 stringController.pitch = 1.44f; // ドの音
             }
             else
@@ -223,11 +224,11 @@ public class HomeManager : MonoBehaviourPunCallbacks
             }
         }
         // ピンの座標を保存
-        markerPos = curPos;
+        prePos = curPos;
         count += 1;
         Debug.Log("count: " + count.ToString());
         // 他人のピンと弦を張る
-        DisplayStrWithOther(markerPos);
+        DisplayStrWithOther(prePos);
     }
 
     private void DisplayStrWithOther(Vector3 myMarkerPos)
@@ -254,8 +255,8 @@ public class HomeManager : MonoBehaviourPunCallbacks
                             Vector3 strVec = othersMarkerPos - myMarkerPos; // 弦の方向を取得
                             float dist = strVec.magnitude;  // 弦の長さを取得
                             Vector3 strY = new Vector3(0f, dist, 0f);
-                            Vector3 strVec2 = strVec * 0.5f;
-                            Vector3 centerCoord = myMarkerPos + strVec2;    // 中点の座標        
+                            Vector3 halfStrVec = strVec * 0.5f;
+                            Vector3 centerCoord = myMarkerPos + halfStrVec;    // 中点の座標        
 
                             GameObject str = Instantiate(othersStrPrefab, centerCoord, Quaternion.identity) as GameObject;
                             str.transform.localScale = new Vector3(strRadius, dist / 2, strRadius); // ひとまずY軸方向に伸ばす
@@ -295,6 +296,6 @@ public class HomeManager : MonoBehaviourPunCallbacks
         {
             Destroy(str);
         }
-        Debug.Log("Deleted all strings.");        
+        Debug.Log("Deleted all strings.");
     }
 }
